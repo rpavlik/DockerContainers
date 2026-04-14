@@ -106,6 +106,22 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
     && \
     apt-get clean
 
+# Install .NET 8 (For PrettyRegistryXML)
+RUN wget https://packages.microsoft.com/keys/microsoft.asc -O - | gpg --dearmor > /usr/share/keyrings/microsoft-prod.gpg
+RUN wget https://packages.microsoft.com/config/debian/12/prod.list -O /etc/apt/sources.list.d/microsoft.list
+RUN env DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
+    env DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y -qq \
+    dotnet-runtime-8.0 \
+    7zip \
+    && \
+    apt-get clean
+
+# Install latest PrettyRegistryXML in opt and link into path
+RUN mkdir -p /opt/PrettyRegistryXML && \
+    wget https://github.com/rpavlik/PrettyRegistryXml/releases/download/v3.8.0/PrettyRegistryXml-Linux-3.8.0.7z -O /opt/PrettyRegistryXML/release.7z && \
+    7zz e -o/opt/PrettyRegistryXML -spe /opt/PrettyRegistryXML/release.7z && \
+    ln -s /opt/PrettyRegistryXML/PrettyRegistryXml.OpenXR /opt/PrettyRegistryXML/PrettyRegistryXml.Vulkan /usr/local/bin
+
 # Add the optional entrypoint to the image
 COPY entrypoint.openxr.sh /root/entrypoint.openxr.sh
 RUN chmod +x /root/entrypoint.openxr.sh
